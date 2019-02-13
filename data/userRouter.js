@@ -1,11 +1,13 @@
 const express = require('express');
 const Users = require('./helpers/userDb.js');
+const postRouter = require('./postRouter');
 
 const router = express.Router();
+router.use('/:id/posts', postRouter);
 
 router.get('/', (req, res) => {
     Users
-        .find()
+        .get()
         .then(users => {
             res.status(200).json({users})
         })
@@ -18,7 +20,7 @@ router.get('/:id', (req, res) => {
     const {id} = req.params;
 
     Users
-        .findById(id)
+        .getById(id)
         .then(user => {
             if(user){
                 res.status(200).json({user})
@@ -31,18 +33,18 @@ router.get('/:id', (req, res) => {
     });
 });
 
-router.user('/', (req, res) => {
+router.post('/', (req, res) => {
     const user = req.body;
 
     console.log(user.title, user.contents);
 
     Users.insert(user)
         .then(user =>{
-            if (!user.title || !user.contents) {
-                Users.findById(user.id).then(user =>
+            if (user.name) {
+                Users.getById(user.id).then(user =>
                 res.status(201).json({user}))}
             else {
-                res.status(400).json({error: "Please provide title and contents for the user."})
+                res.status(400).json({error: "Please provide a name for the user."})
             }
         }
         )
@@ -55,7 +57,7 @@ router.delete('/:id', (req, res) => {
     const {id} = req.params;
 
     Users
-        .findById(id)
+        .getById(id)
         .then(user => {
             if(user){
                 Users.remove(id).then(
@@ -75,11 +77,11 @@ router.put('/:id', (req, res) =>{
     Users
         .update(id, changes)
         .then(updated => {
-            if (!changes.title || !changes.contents) {
+            if (!changes.name) {
                 res.status(400).json({error: "Please provide title and contents for the user."})
             }
             else if(updated) {
-                Users.findById(id).then(user =>
+                Users.getById(id).then(user =>
                     res.status(200).json({user}));
             } else {
                 res.status(404).json({error: "The user with the specified ID does not exist."})

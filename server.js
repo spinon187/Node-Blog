@@ -3,50 +3,40 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 
 const userRouter = require('./data/userRouter.js');
-const postRouter = require('./data/postRouter.js');
 
 const server = express();
-
-function teamNamer(req, res, next){
-  req.team = 'Web XVI';
-
-  next();
-}
 
 server.use(express.json());
 server.use(helmet());
 server.use(morgan('dev'));
-server.use(teamNamer);
 
 
-server.use('/api/users', restricted, userRouter);
-server.use(`/api/users/${id}/posts`, restricted({id}), postRouter);
+server.use('/api/users/', userRouter);
 
-function restricted(req, res, next){
-  const password = req.headers.authorization;
+function checkCase(){
+  return function(req, res, next){
+    const name = req.body.name;
 
-  if (password === 'mellon'){
-    next();
+    if (name.split()[0] === name.split()[0].toUpperCase()){
+      next();
+    }
+    else {
+      res.status(401).json({message: 'nope'})
+    }
   }
-  else {
-    res.status(401).json({message: 'nope'})
-  }
+
 }
+
 
 function errorHandler(err, req, res, next){
   res.status(400).json({message: 'nawww'});
 }
 
 server.get('/', (req, res) => {
-    if (req.headers.name === 'po'){res.send(`
-      <h2>Lambda Hubs API</h2>
-      <p>Welcome ${req.team}, to the Lambda Hubs API</p>
-    `);} else {
-      next('any argument will become err arg')
-    }
+    res.send(`<h2>hi</h2>`)
   });
 
-erver.use(errorHandler);
+server.use(errorHandler);
 
 
 

@@ -1,11 +1,14 @@
 const express = require('express');
-const Posts = require('./helpers/postPosts.js');
+const Posts = require('./helpers/postDb.js');
+const Users = require('./helpers/userDb.js');
 
 const router = express.Router();
 
 router.get('/', (req, res) => {
-    Posts
-        .find()
+    const userId = req.params.id;
+    console.log(userId);
+    Users
+        .getUserPosts(userId)
         .then(posts => {
             res.status(200).json({posts})
         })
@@ -18,7 +21,7 @@ router.get('/:id', (req, res) => {
     const {id} = req.params;
 
     Posts
-        .findById(id)
+        .getById(id)
         .then(post => {
             if(post){
                 res.status(200).json({post})
@@ -38,11 +41,11 @@ router.post('/', (req, res) => {
 
     Posts.insert(post)
         .then(post =>{
-            if (!post.title || !post.contents) {
-                Posts.findById(post.id).then(post =>
+            if (!post.text) {
+                Posts.getById(post.id).then(post =>
                 res.status(201).json({post}))}
             else {
-                res.status(400).json({error: "Please provide title and contents for the post."})
+                res.status(400).json({error: "Please provide text for the post."})
             }
         }
         )
@@ -55,7 +58,7 @@ router.delete('/:id', (req, res) => {
     const {id} = req.params;
 
     Posts
-        .findById(id)
+        .getById(id)
         .then(post => {
             if(post){
                 Posts.remove(id).then(
@@ -75,8 +78,8 @@ router.put('/:id', (req, res) =>{
     Posts
         .update(id, changes)
         .then(updated => {
-            if (!changes.title || !changes.contents) {
-                res.status(400).json({error: "Please provide title and contents for the post."})
+            if (!changes.text) {
+                res.status(400).json({error: "Please provide new text for the post."})
             }
             else if(updated) {
                 Posts.findById(id).then(post =>
