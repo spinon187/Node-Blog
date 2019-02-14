@@ -2,10 +2,10 @@ const express = require('express');
 const Posts = require('./helpers/postDb.js');
 const Users = require('./helpers/userDb.js');
 
-const router = express.Router();
+const postRouter = express.Router({ mergeParams: true });
 
-router.get('/', (req, res) => {
-    const userId = req.params.id;
+postRouter.get('/', (req, res) => {
+    const userId = req.params.user_id;
     console.log(userId);
     Users
         .getUserPosts(userId)
@@ -17,7 +17,7 @@ router.get('/', (req, res) => {
     });
 });
 
-router.get('/:id', (req, res) => {
+postRouter.get('/:id', (req, res) => {
     const {id} = req.params;
 
     Posts
@@ -34,16 +34,18 @@ router.get('/:id', (req, res) => {
     });
 });
 
-router.post('/', (req, res) => {
-    const post = req.body;
 
-    console.log(post.title, post.contents);
+postRouter.post('/', (req, res) => {
+    const userId = req.params.user_id
+    const text = req.body.text;
 
-    Posts.insert(post)
-        .then(post =>{
-            if (!post.text) {
-                Posts.getById(post.id).then(post =>
-                res.status(201).json({post}))}
+    const taggedPost = {text, user_id: userId};
+
+    Posts.insert(taggedPost)
+        .then(taggedPost =>{
+            if (taggedPost.text) {
+                Posts.getById(taggedPost.id).then(taggedPost =>
+                res.status(201).json({taggedPost}))}
             else {
                 res.status(400).json({error: "Please provide text for the post."})
             }
@@ -54,7 +56,7 @@ router.post('/', (req, res) => {
         })
 });
 
-router.delete('/:id', (req, res) => {
+postRouter.delete('/:id', (req, res) => {
     const {id} = req.params;
 
     Posts
@@ -71,7 +73,7 @@ router.delete('/:id', (req, res) => {
         });
 });
 
-router.put('/:id', (req, res) =>{
+postRouter.put('/:id', (req, res) =>{
     const {id} = req.params;
     const changes = req.body;
 
@@ -82,7 +84,7 @@ router.put('/:id', (req, res) =>{
                 res.status(400).json({error: "Please provide new text for the post."})
             }
             else if(updated) {
-                Posts.findById(id).then(post =>
+                Posts.getById(id).then(post =>
                     res.status(200).json({post}));
             } else {
                 res.status(404).json({error: "The post with the specified ID does not exist."})
@@ -94,4 +96,5 @@ router.put('/:id', (req, res) =>{
 });
 
 
-module.exports = router;
+
+module.exports = postRouter;

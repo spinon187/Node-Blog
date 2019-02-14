@@ -13,19 +13,7 @@ server.use(morgan('dev'));
 
 server.use('/api/users/', userRouter);
 
-function checkCase(){
-  return function(req, res, next){
-    const name = req.body.name;
 
-    if (name.split()[0] === name.split()[0].toUpperCase()){
-      next();
-    }
-    else {
-      res.status(401).json({message: 'nope'})
-    }
-  }
-
-}
 
 
 function errorHandler(err, req, res, next){

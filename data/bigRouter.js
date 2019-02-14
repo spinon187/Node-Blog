@@ -3,7 +3,21 @@ const Users = require('./helpers/userDb.js');
 const Posts = require('./helpers/postDb.js');
 const router = express.Router();
 
-router.get('/users', (req, res) => {
+function checkCase(){
+    return function(req, res, next){
+      const name = req.body.name;
+        console.log(name);
+      if (name.split('')[0] === name.split('')[0].toUpperCase()){
+        next();
+      }
+      else {
+        res.status(401).json({message: 'nope'})
+      }
+    }
+  
+  }
+
+router.get('/users', checkCase => {
     Users
         .get()
         .then(users => {
@@ -14,7 +28,8 @@ router.get('/users', (req, res) => {
     });
 });
 
-router.get('/users/:userId', (req, res) => {
+
+router.get('/users/:userId', checkCase, (req, res) => {
     const {userId} = req.params;
 
     Users
@@ -123,7 +138,6 @@ router.get('/users/:userId/posts/:id', (req, res) => {
 router.post('/', (req, res) => {
     const post = req.body;
 
-    console.log(post.title, post.contents);
 
     Posts.insert(post)
         .then(post =>{
